@@ -43,7 +43,10 @@ $ git branch
 * sm-mapping
 ```
 
-이제 branch가 바뀌었으므로 여기에서 작업을 하고 add, commit, push 순서로 작업을 하시면 됩니다.
+이제 branch가 바뀌었으므로   
+
+먼저 본인이 작업할 pkg 디렉토리를 하나 만들어 줍니다. 또는 가지고 있는 패키지 디렉토리를 복사/이동 시킵니다.  
+그리고 그 안에서 작업 하시고, 여기에서 작업을 하고 add, commit, push 순서로 작업을 하시면 됩니다.
 
 깃에 파일 추가해서 stage 로 인식시키기 (깃이 파일을 추적합니다)
 ```
@@ -60,6 +63,60 @@ origin [본인의브랜치명]
 ```
 $ git push -u origin sm-mapping
 ```
+
+**하루 마감** 일때 또는 적당한 시기(?)에 깃허브에서 pull request를 해주면 됩니다.
+자신의 깃허브 사이트로 오면 pull request를 하라고 나오는데 적당히 클릭 클릭 해주면 됩니다.
+
+![pullrequest1](img/open_pull_request1.png)
+
+![pullrequest2](img/open_pull_request2.png)
+  
+<br/>
+
+**OR**  
+아래 내용은 깃허브 사이트에 말고 또는 CLI로 터미널에서 하려면 아래의 내용을 참고하세요   
+먼저 main 브랜치로 이동해 줍니다.    
+본인의 브랜치에서 마지막으로 commit한 내용을 push를 한 다음에 
+
+```
+$ git checkout main
+```
+그리고 나서, git merge [본인의 브랜치] 를 합니다
+```
+$ git merge sm-mapping
+```
+메인에서 별 다른 변경이 없었다면 fast-farward 방식으로 합병이 됩니다.  
+아래는 예시 입니다.
+```
+Updating ce9b99f..34619a4
+Fast-forward
+ test2_dir/test2.txt | 1 +
+ test_dir/hello.txt  | 1 +
+ 2 files changed, 2 insertions(+)
+ create mode 100644 test2_dir/test2.txt
+ create mode 100644 test_dir/hello.txt
+```
+
+그리고 상태 확인
+```
+$ git status
+```
+를 해보면
+```
+On branch main
+Your branch is ahead of 'origin/main' by 2 commits.
+  (use "git push" to publish your local commits)
+```
+main브런치가 2개의 commit이 앞서 있다고 나옵니다. 즉 sm-mapping에서 push한 내용이 (2번의 commit) 을 이미 한 후에  
+main 브랜치와 합쳐졌기 때문에 기존의 main브랜치 입장에서는 처음을 클론을 받았을 때의 
+상태이기 때문에 commit이 없는 상태  
+그래서 2개의 커밋이 앞서 있다고 나오는 것임. 그래서 나온것 처럼 git push를 해주면 됩니다.
+그러면 깃허브에 (remote main)으로 업데이트가 되는 것
+
+```
+$ git push
+```
+하면 깃허브에도 최종적으로 반영이 되게 됩니다. 조금 복잡할 수 있지만 익숙해지면 편해질 듯(?)도 합니다.
 
 <br/>
 
