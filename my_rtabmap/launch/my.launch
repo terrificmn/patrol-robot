@@ -1,10 +1,5 @@
 <launch>
 
-    <!-- 
-          NOTICE: Installation of rtabmap is required for using this launch file:
-                  For installation type:
-                        apt-get install ros-kinetic-rtabmap-ros
-    -->
     <arg name="device_type_camera1"    		default="t265"/>
     <arg name="device_type_camera2"    		default="l515"/>	<!-- Note: using regular expression. match D435, D435i, D415... -->
     <arg name="serial_no_camera1"    			default="943222110188"/>
