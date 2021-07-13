@@ -24,14 +24,10 @@
         <arg name="pointcloud_texture_stream" value="RS2_STREAM_ANY"/>
         <arg name="align_depth" value="true"/>
         <!-- High DEF CAM -->
-        <!-- <arg if="$(arg HD)" name="depth_width" value="1024"/>
+        <arg if="$(arg HD)" name="depth_width" value="1024"/>
         <arg if="$(arg HD)" name="depth_height" value="768"/>
         <arg if="$(arg HD)" name="color_width" value="1920"/>
-        <arg if="$(arg HD)" name="color_height" value="1080"/> -->
-        <arg if="$(arg HD)" name="depth_width" value="640"/>
-        <arg if="$(arg HD)" name="depth_height" value="480"/>
-        <arg if="$(arg HD)" name="color_width" value="640"/>
-        <arg if="$(arg HD)" name="color_height" value="480"/>
+        <arg if="$(arg HD)" name="color_height" value="1080"/>
         <!-- STANDARD DEF CAM -->
         <arg unless="$(arg HD)" name="depth_width" value="640"/>
         <arg unless="$(arg HD)" name="depth_height" value="480"/>
