@@ -27,6 +27,7 @@
             <arg name="clip_distance"                   value="$(arg clip_distance)"/>
             
     </include>
+<!-- <remap from="imu/data_raw" to="/t265/imu"/> 효과없음 -->
 
     <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
         <!-- <param name="Grid/RangeMax"              type="string" value="6.0"/> -->

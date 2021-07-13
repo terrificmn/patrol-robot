@@ -63,7 +63,8 @@
 
     <arg name="wait_imu_to_init" value="true"/>
     <node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_node">
-        <remap from="imu/data_raw" to="/l515/imu"/>
+        <!-- <remap from="imu/data_raw" to="/l515/imu"/> -->
+        <remap from="imu/data_raw" to="/t265/imu"/> <!--효과를 잘 모르겠음-->
       </node>
 
     <group ns="rtabmap">
