@@ -31,9 +31,18 @@
 
     <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
         <!-- <param name="Grid/RangeMax"              type="string" value="6.0"/> -->
-        <!-- <param name="Odom/Strategy"              type="string" value="0"/>
+        <!-- Visual Odometry Stategy into Frame to Frame 로 바꿈 -->
+        <!-- <param name="Odom/Strategy"              type="string" value="1"/>
+
+        Maximum Features 줄여보기
+        maximum features map size, default 2000
+        <param name="OdomF2M/MaxSize" type="string" value="1000"/> 
+        maximum features extracted by image, default 1000
+        <param name="Vis/MaxFeatures" type="string" value="600"/>
+
         <param name="Vis/MaxDepth" type="string" value="10"/> 
         <param name="Vis/EstimationType" type="string" value="1"/> -->
+
             <arg name="rtabmap_args"       value="--delete_db_on_start
                                             --SURF/HessianThreshold 100"/>
 
@@ -50,11 +59,13 @@
             <arg name="odom_tf_angular_variance" value="0.0001"/>
 		    <arg name="odom_tf_linear_variance" value="0.0001"/>
             
-
-            <param name="cloud_noise_filtering_radius" value="0.10"/>
+            <!-- Reduce Point Cloud Noises -->
+            <param name="cloud_noise_filtering_radius" value="0.05"/>
             <param name="cloud_noise_filtering_min_neighbors" value="2"/>
+            <!-- Change inital costmap size for move_base -->
 	        <param name="Reg/Force3DoF"    value="true" />
 	        <param name="Optimizer/Slam2D" value="true" />
+            
             <param name="proj_max_height" value="2.0"/>
 	        <param name="proj_max_ground_height" value="0.1"/>
             <param name="Rtabmap/DetectionRate" type="string" value="2"/>

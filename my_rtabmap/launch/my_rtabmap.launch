@@ -50,7 +50,7 @@
     </include>
 
     <arg name="rtabmapviz"    default="true"/>
-    <arg name="scan_rate"    default="15"/>
+    <arg name="scan_rate"    default="30"/>
     <arg name="rate"            value="2"/>
     <arg if="$(arg sim_time)" name="use_sim_time" value="true"/>
     <arg name="scan_cloud_assembling" value="false"/>
