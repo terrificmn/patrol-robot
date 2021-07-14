@@ -10,11 +10,10 @@
     <param unless="$(arg sim_time)" name="/l515/l500_depth_sensor/sensor_mode" value ="0"/>
     <!-- <param unless="$(arg sim_time)" name="/l515/rgb_camera/gain" value ="4096"/> -->
     <!-- HD MODE? true/false  --> 
-    <arg unless="$(arg sim_time)" name="HD" value="false"/>
+    <arg name="is_hd" value="false"/>
     <!-- Launch l515  -->  
     <include unless="$(arg sim_time)" file="$(find realsense2_camera)/launch/rs_camera.launch">
         <arg name="serial_no" value="f0460650"/>
-        <!-- <arg name="serial_no" value="f1061289"/> -->
         <arg name="camera" value="l515"/>
         <arg name="align_depth" value="true"/>
         <arg name="unite_imu_method" value="linear_interpolation"/>
@@ -44,8 +43,8 @@
         <arg name="serial_no" value="943222110188"/>
         <arg name="camera" value="t265"/>
         <arg name="unite_imu_method" value="linear_interpolation"/>
-        <arg name="enable_fisheye1" value="true"/>
-        <arg name="enable_fisheye2" value="true"/>
+        <arg name="enable_fisheye1" value="false"/>
+        <arg name="enable_fisheye2" value="false"/>
         <arg name="enable_sync" value="true"/>
         <arg name="publish_odom_tf" value="true"/>          
     </include>
@@ -74,54 +73,68 @@
         <remap from="/imu/data" to="/rtabmap/imu"/>
       </node>
 
-    <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyzrgb" output="screen">
-    <!-- <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen"> -->
-    <!-- <node pkg="nodelet" type="nodelet" name="point_cloud_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen"> -->
+    <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen">
         <param name="approx_sync" value="false"/>
         <param name="/depth/camera_info" value="/l515/depth/camera_info" />
-        <param name="decimation" value="4"/>
         <remap from="/depth/image" to="/l515/depth/image_rect_raw"/>
-        <remap from="depth_registered/points" to="/point_cloud/points"/>
-        <remap from="cloud_votec"             to="/cloud" />
+        <param name="decimation" value="4"/>
+        
+
+min_depth (double, default: 0.0)
+
+    Min depth (m) of the generated cloud. 
+
+~max_depth (double, default: 0.0)
+
+    Max depth (m) of the generated cloud. Set 0.0 to deactivate depth filtering. 
+
+~noise_filter_radius (double, default: 0.0)
+
+    Max radius (m) for searching point neighbors. Set 0.0 to deactivate noise filtering. 
+
+~noise_filter_min_neighbors (int, default: 5)
+
+    Minimum neighbors of a point to keep it. 
+
+
     </node>
     
 
     <group ns="rtabmap">
+      <node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen">
+          !--  point_xyz에서 cloud로 보내는지 확인해볼 것
+          <remap from="scan_cloud_topic" to="/cloud"/>
+          <param name="frame_id" type="string" value="$(arg frame_id)"/>  
+          <param name="publish_tf"          type="bool"   value="true"/>
+          <!-- <param name="scan_cloud_max_points"       type="int"    value="$(arg scan_cloud_max_points)"/> -->
 
-    <node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen">
-        <remap from="scan_cloud" to="/l515/depth/color/points"/>
-        <param name="frame_id" type="string" value="$(arg frame_id)"/>  
-        <param name="publish_tf"          type="bool"   value="true"/>
-        <!-- <param name="scan_cloud_max_points"       type="int"    value="$(arg scan_cloud_max_points)"/> -->
+          <!-- ICP parameters -->
+          <param name="Icp/VoxelSize"           type="string" value="$(arg voxel_size)"/>  
+          <param name="Icp/Epsilon"             type="string" value="0.005"/>
+          <param name="Icp/PMOutlierRatio"    type="string" value="0.65" />
+          <param name="Icp/PointToPlaneK"       type="string" value="20"/>
+          <param name="Icp/PointToPlaneRadius"  type="string" value="0"/> 
+          <param name="Icp/PointToPlaneMinComplexity" type="string" value="0"/> 
+          <param name="Icp/CorrespondenceRatio" type="string" value="0.2"/>
+
+          <!-- Odom parameters -->       
+          <param name="Odom/ScanKeyFrameThr"       type="string" value="0.7"/>
+          <param name="Odom/Strategy"              type="string" value="0"/>
+          <!-- Max Size of Global Map to keep in "history" -->
+          <param name="OdomF2M/ScanMaxSize"        type="string" value="15000"/>   
+        </node>
+
         
-
-        <!-- ICP parameters -->
-        <param name="Icp/VoxelSize"           type="string" value="$(arg voxel_size)"/>  
-        <param name="Icp/Epsilon"             type="string" value="0.005"/>
-        <param name="Icp/PMOutlierRatio"    type="string" value="0.65" />
-        <param name="Icp/PointToPlaneK"       type="string" value="20"/>
-        <param name="Icp/PointToPlaneRadius"  type="string" value="0"/> 
-        <param name="Icp/PointToPlaneMinComplexity" type="string" value="0"/> 
-        <param name="Icp/CorrespondenceRatio" type="string" value="0.2"/>
-
-        <!-- Odom parameters -->       
-        <param name="Odom/ScanKeyFrameThr"       type="string" value="0.7"/>
-        <param name="Odom/Strategy"              type="string" value="0"/>
-        <!-- Max Size of Global Map to keep in "history" -->
-        <param name="OdomF2M/ScanMaxSize"        type="string" value="10000"/>   
+      <node if="$(arg scan_cloud_assembling)" pkg="rtabmap_ros" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
+          <remap from="cloud"           to="/l515/depth/color/points"/>
+          <remap from="odom"            to="odom"/>
+          <!-- <param name="max_clouds"      type="int"    value="$(eval arg('scan_rate') / arg('rate'))" /> -->
+          <!-- <param name="fixed_frame_id"  type="string" value="" />
+          <param name="assembling_time" type="double" value="$(eval 1 / arg('rate'))"/>
+          <param name="voxel_size"      type="double" value="0.05"/>
+          <param name="noise_radius"        type="double" value="0"/>
+          <param name="noise_min_neighbors" type="int"    value="5"/> -->
       </node>
-
-      
-    <node if="$(arg scan_cloud_assembling)" pkg="rtabmap_ros" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
-        <remap from="cloud"           to="/l515/depth/color/points"/>
-        <remap from="odom"            to="odom"/>
-        <!-- <param name="max_clouds"      type="int"    value="$(eval arg('scan_rate') / arg('rate'))" /> -->
-        <!-- <param name="fixed_frame_id"  type="string" value="" />
-        <param name="assembling_time" type="double" value="$(eval 1 / arg('rate'))"/>
-        <param name="voxel_size"      type="double" value="0.05"/>
-        <param name="noise_radius"        type="double" value="0"/>
-        <param name="noise_min_neighbors" type="int"    value="5"/> -->
-    </node>
 
 
     <!-- RTABMAP NODE  -->
