@@ -1,7 +1,6 @@
 <launch>
     <!-- use_sim_time?! T/F  -->
     <arg name="sim_time" value="false"/>
-    <arg name="is_hd" value="false"/>
     <arg name="use_t265" value="true"/>
     <!-- start l515 -->
     <param unless="$(arg sim_time)" name="/l515/motion_module/global_time_enabled" value="true" />
@@ -73,36 +72,24 @@
         <remap from="/imu/data" to="/rtabmap/imu"/>
       </node>
 
-    <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen">
+
+15jUL현재 작동이 안되고 있음~~~~~~ 
+    <!-- <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen">
         <param name="approx_sync" value="false"/>
         <param name="/depth/camera_info" value="/l515/depth/camera_info" />
         <remap from="/depth/image" to="/l515/depth/image_rect_raw"/>
         <param name="decimation" value="4"/>
-        
+        <param name="min_depth" type="double" value="0.01"/>
+        <param name="max_depth" type="double" value="0.0"/>
+        <param name="noise_filter_radius" type="double" value="0.0"/>
+        <param name="noise_filter_min_neighbors" type="int" value="10"/>
 
-min_depth (double, default: 0.0)
-
-    Min depth (m) of the generated cloud. 
-
-~max_depth (double, default: 0.0)
-
-    Max depth (m) of the generated cloud. Set 0.0 to deactivate depth filtering. 
-
-~noise_filter_radius (double, default: 0.0)
-
-    Max radius (m) for searching point neighbors. Set 0.0 to deactivate noise filtering. 
-
-~noise_filter_min_neighbors (int, default: 5)
-
-    Minimum neighbors of a point to keep it. 
-
-
-    </node>
+    </node> -->
     
 
     <group ns="rtabmap">
       <node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen">
-          !--  point_xyz에서 cloud로 보내는지 확인해볼 것
+          <!-- point_xyz에서 cloud로 보내는지 확인해볼 것 -->
           <remap from="scan_cloud_topic" to="/cloud"/>
           <param name="frame_id" type="string" value="$(arg frame_id)"/>  
           <param name="publish_tf"          type="bool"   value="true"/>
@@ -128,12 +115,14 @@ min_depth (double, default: 0.0)
       <node if="$(arg scan_cloud_assembling)" pkg="rtabmap_ros" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
           <remap from="cloud"           to="/l515/depth/color/points"/>
           <remap from="odom"            to="odom"/>
-          <!-- <param name="max_clouds"      type="int"    value="$(eval arg('scan_rate') / arg('rate'))" /> -->
-          <!-- <param name="fixed_frame_id"  type="string" value="" />
+          <param name="max_clouds"      type="int"    value="$(eval arg('scan_rate') / arg('rate'))" />
+          <param name="fixed_frame_id"  type="string" value="" />
           <param name="assembling_time" type="double" value="$(eval 1 / arg('rate'))"/>
           <param name="voxel_size"      type="double" value="0.05"/>
           <param name="noise_radius"        type="double" value="0"/>
-          <param name="noise_min_neighbors" type="int"    value="5"/> -->
+          <param name="noise_min_neighbors" type="int"    value="5"/>
+          <param name="approx_sync" value="false"/>
+
       </node>
 
 
