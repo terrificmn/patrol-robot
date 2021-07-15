@@ -4,7 +4,6 @@
     <arg name="device_type_camera2"    		default="l515"/>	<!-- Note: using regular expression. match D435, D435i, D415... -->
     <arg name="serial_no_camera1"    			default="943222110188"/>
     <arg name="serial_no_camera2"    			default="f0460650"/>
-    <!-- <arg name="serial_no_camera2" value="f1061289"/>> -->
     <arg name="camera1"              			default="t265"/>		<!-- Note: Replace with camera name -->
     <arg name="camera2"              			default="l515"/>		<!-- Note: Replace with camera name -->
     <arg name="clip_distance"             default="-2"/>
@@ -17,7 +16,7 @@
     
     <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" /> -->
 
-<!-- rs-l515_and_t265.launch need to be created -->
+<!-- rs-l515_and_t265.launch need to be created in a realsense2-camera pkg -->
     <include file="$(find realsense2_camera)/launch/rs_l515_and_t265.launch">
             <arg name="device_type_camera1"             value="$(arg device_type_camera1)"/>
             <arg name="device_type_camera2"             value="$(arg device_type_camera2)"/>
@@ -26,6 +25,11 @@
             <arg name="camera1"                         value="$(arg camera1)"/>
             <arg name="camera2"                         value="$(arg camera2)"/>
             <arg name="clip_distance"                   value="$(arg clip_distance)"/>
+
+            <arg name="unite_imu_method" 시도해볼 것>
+            <arg name="align_depth" value="true"/> 시도해볼 것
+            <arg name="filters" value="pointcloud"/> 시도
+            <arg name="hold_back_imu_for_frames" /> 시도
             
     </include>
 <!-- <remap from="imu/data_raw" to="/t265/imu"/> 효과없음 -->
