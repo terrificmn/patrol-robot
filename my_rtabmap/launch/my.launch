@@ -26,10 +26,13 @@
             <arg name="camera2"                         value="$(arg camera2)"/>
             <arg name="clip_distance"                   value="$(arg clip_distance)"/>
 
-            <arg name="unite_imu_method" 시도해볼 것>
-            <arg name="align_depth" value="true"/> 시도해볼 것
-            <arg name="filters" value="pointcloud"/> 시도
-            <arg name="hold_back_imu_for_frames" /> 시도
+            <!-- need be modified and try out below -->
+            <!-- need be modified and try out-->
+            <!-- need be modified and try out-->
+            <!-- <arg name="unite_imu_method"> --> <!-- trying-->
+            <!-- <arg name="align_depth" value="true"/> 
+            <arg name="filters" value="pointcloud"/> -->
+            <!-- <arg name="hold_back_imu_for_frames" />  -->
             
     </include>
 <!-- <remap from="imu/data_raw" to="/t265/imu"/> 효과없음 -->

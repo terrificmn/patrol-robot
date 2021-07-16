@@ -14,8 +14,8 @@ public:
     GoCircle() {
         cout << "initialize the circle movement!" << endl;
         Sub = Nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 5, &GoCircle::msgCallback, this);
-        //Pub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
-        Pub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 5);
+        Pub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
+        // Pub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 5);
         
     }
 
@@ -24,7 +24,7 @@ public:
         ros::Rate Loop_rate(10);
 
 
-        int multipliedInputNum = 1.5;  // 사용자 거리 입력
+        int multipliedInputNum = 1.0;  // 사용자 거리 입력
         int counter = 0;
         const double PI= 3.14159265359;
         const double R = PI / 2;
