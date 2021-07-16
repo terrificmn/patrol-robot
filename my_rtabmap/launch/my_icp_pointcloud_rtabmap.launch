@@ -72,6 +72,14 @@
         <remap from="/imu/data_raw" to="/t265/imu"/>
       </node>
 
+    <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen">
+        <param name="approx_sync" value="false"/>
+        <param name="/depth/camera_info" value="/l515/depth/camera_info" />
+        <remap from="/depth/image" to="/l515/depth/image_rect_raw"/>
+        <param name="decimation" value="4"/>
+    </node>
+    
+
     <group ns="rtabmap">
       <node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen">
           <!-- point_xyz에서 cloud로 보내는지 확인해볼 것 -->
@@ -104,21 +112,6 @@
           <!-- Max Size of Global Map to keep in "history" -->
           <param name="OdomF2M/ScanMaxSize"        type="string" value="15000"/>   
         </node>
-
-        
-      <node if="$(arg scan_cloud_assembling)" pkg="rtabmap_ros" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
-          <remap from="cloud"           to="/l515/depth/color/points"/>
-          <remap from="odom"            to="odom"/>
-          <param name="max_clouds"      type="int"    value="$(eval arg('scan_rate') / arg('rate'))" />
-          <param name="fixed_frame_id"  type="string" value="" />
-          <param name="assembling_time" type="double" value="$(eval 1 / arg('rate'))"/>
-          <param name="voxel_size"      type="double" value="0.05"/>
-          <param name="noise_radius"        type="double" value="0"/>
-          <param name="noise_min_neighbors" type="int"    value="5"/>
-          <param name="approx_sync" value="false"/>
-
-      </node>
-
 
     <!-- RTABMAP NODE  -->
     
