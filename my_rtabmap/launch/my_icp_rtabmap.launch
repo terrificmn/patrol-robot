@@ -38,6 +38,7 @@
     <node if="$(arg sim_time)" pkg="tf" type="static_transform_publisher" name="static_tf_1" args="0 0 0 0 0 0 t265_pose_frame t265_link 10" />
 
     <param if="$(arg use_t265)" name="/t265/tracking_module/enable_mapping" value="false"/>
+    <param name="/t265/realsense2_camera/enable_relocalization" type="bool" value="false"/>
     <include if="$(arg use_t265)" file="$(find realsense2_camera)/launch/rs_t265.launch">
         <arg name="serial_no" value="943222110188"/>
         <arg name="camera" value="t265"/>
@@ -65,9 +66,9 @@
     <!-- <node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_node"> -->
     <!-- <remap from="imu/data_raw" to="/l515/imu"/> -->
       <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node">
-        <param name="~use_mag" value="false"/>
-        <param name="~publish_tf" value="false"/>
-        <param name="~world_frame" value="enu" />
+        <param name="use_mag" value="false"/>
+        <param name="publish_tf" value="false"/>
+        <param name="world_frame" value="enu" />
         <remap from="/imu/data_raw" to="/t265/imu"/>
         <remap from="/imu/data" to="/rtabmap/imu"/>
       </node>
@@ -93,12 +94,15 @@
           <remap from="scan_cloud_topic" to="/cloud"/>
           <param name="frame_id" type="string" value="$(arg frame_id)"/>  
           <param name="publish_tf"          type="bool"   value="true"/>
+           <param name="rgb_topic" type="string" value="/l515/color/image_raw"/>
           <!-- <param name="scan_cloud_max_points"       type="int"    value="$(arg scan_cloud_max_points)"/> -->
 
           <!-- ICP parameters -->
-          <param name="Icp/VoxelSize"           type="string" value="$(arg voxel_size)"/>  
+          <param name="scan_voxel_size" value="$(arg voxel_size)"/>
+          <!-- <param name="Icp/VoxelSize"           type="string" value="$(arg voxel_size)"/>   -->
+          <!-- scan_voxel_size는 Icp/VoxelSize로 하는게 괜찮다고 하는 듯-->
           <param name="Icp/Epsilon"             type="string" value="0.005"/>
-          <param name="Icp/PMOutlierRatio"    type="string" value="0.65" />
+          <param name="Icp/OutlierRatio"    type="string" value="0.65" />
           <param name="Icp/PointToPlaneK"       type="string" value="20"/>
           <param name="Icp/PointToPlaneRadius"  type="string" value="0"/> 
           <param name="Icp/PointToPlaneMinComplexity" type="string" value="0"/> 
@@ -132,15 +136,15 @@
         <param name="rtabmap_args"       value="--delete_db_on_start
                                             --SURF/HessianThreshold 100"/>
 
-        
-        <!-- <param name="scan_cloud_topic" value="/cloud" /> -->
+        <param name="Grid/FromDepth" type="string" value="true"/> <!-- occupancy grid map from cloud projection -->
+        <param name="subscribe_scan_cloud" type="bool" value="true"/>
         <param name="depth_topic" value="/l515/aligned_depth_to_color/image_raw" />
-        <param name="rgb_topic" value="/l515/color/image_raw" />
+        
         <param name="camera_info_topic" value="/l515/color/camera_info" />
 
         <param name="frame_id"             type="string" value="$(arg frame_id)"/>  
         <param name="subscribe_depth"      type="bool" value="false"/>
-        <param name="subscribe_scan_cloud" type="bool" value="true"/>
+        
         <param name="approx_sync"          type="bool" value="false"/>
         <remap from="imu"           to="$(arg imu_topic)"/>
 
@@ -185,9 +189,8 @@
       <node if="$(arg rtabmapviz)" name="rtabmapviz" pkg="rtabmap_ros" type="rtabmapviz" > <!-- output="screen" 뺨 -->
 
         <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
-        <remap from="scan_cloud_topic" to="/cloud"/>
         <remap from="camera_info_topic" to="/camera/color/camera_info"/>
-        <remap from="depth_topic" to="/camera/aligned_depth_to_color/image_raw"/>
+        
         <remap from="rgb_topic" to="/camera/color/image_raw"/>
         <remap from="imu_topic" to="/rtabmap/imu"/>
         <remap from="imu" to="/imu/data"/>
@@ -198,9 +201,7 @@
         
         <param name="frame_id" type="string" value="$(arg frame_id)"/>
         <param name="odom_frame_id" type="string" value="odom"/>
-        <param name="subscribe_odom_info" type="bool" value="true"/>
-        <param name="subscribe_scan_cloud" type="bool" value="true"/>
-        <param name="approx_sync" type="bool" value="false"/>
+        <param name="subscribe_odom_info" type="bool" value="false"/> <!-- 되는지 확인 하기 -->
         <remap if="$(arg scan_cloud_assembling)" from="scan_cloud" to="assembled_cloud"/>
         <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
 
