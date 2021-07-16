@@ -27,7 +27,7 @@
         <arg if="$(arg is_hd)" name="depth_height" value="768"/>
         <arg if="$(arg is_hd)" name="color_width" value="1920"/>
         <arg if="$(arg is_hd)" name="color_height" value="1080"/>
-        <!-- STANDARD DEF CAM -->
+        <!-- STANDARD DEF CAM --> <!-- 여기 선택됨 -->
         <arg unless="$(arg is_hd)" name="depth_width" value="640"/>
         <arg unless="$(arg is_hd)" name="depth_height" value="480"/>
         <arg unless="$(arg is_hd)" name="color_width" value="1280"/>
@@ -70,7 +70,6 @@
         <param name="publish_tf" value="false"/>
         <param name="world_frame" value="enu" />
         <remap from="/imu/data_raw" to="/t265/imu"/>
-        <remap from="/imu/data" to="/rtabmap/imu"/>
       </node>
 
 
@@ -91,7 +90,11 @@
     <group ns="rtabmap">
       <node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen">
           <!-- point_xyz에서 cloud로 보내는지 확인해볼 것 -->
-          <remap from="scan_cloud_topic" to="/cloud"/>
+          <!-- <remap from="scan_cloud_topic" to="/cloud"/> -->
+          <remap from="scan_cloud" to="/l515/depth/color/points"/>  <!-- 중요 여기 리맵을 해야지~ 포인트 클라우드가 나옴 -->
+          <!-- 리맵을 해줘야하지 /imu/data로 /rtabmap/rtabmap 으로 연결되는 듯 하다-->
+          <remap from="imu"           to="$(arg imu_topic)"/>
+
           <param name="frame_id" type="string" value="$(arg frame_id)"/>  
           <param name="publish_tf"          type="bool"   value="true"/>
            <param name="rgb_topic" type="string" value="/l515/color/image_raw"/>
@@ -101,12 +104,14 @@
           <param name="scan_voxel_size" value="$(arg voxel_size)"/>
           <!-- <param name="Icp/VoxelSize"           type="string" value="$(arg voxel_size)"/>   -->
           <!-- scan_voxel_size는 Icp/VoxelSize로 하는게 괜찮다고 하는 듯-->
+          <param name="Icp/PointToPlane" type="bool" value="true"/>  <!-- 빨간 표시 확인해 볼것 -->
           <param name="Icp/Epsilon"             type="string" value="0.005"/>
           <param name="Icp/OutlierRatio"    type="string" value="0.65" />
           <param name="Icp/PointToPlaneK"       type="string" value="20"/>
           <param name="Icp/PointToPlaneRadius"  type="string" value="0"/> 
           <param name="Icp/PointToPlaneMinComplexity" type="string" value="0"/> 
           <param name="Icp/CorrespondenceRatio" type="string" value="0.2"/>
+          <param name="Icp/MaxCorrespondenceDistance" type="string" value="0.1"/>
 
           <!-- Odom parameters -->       
           <param name="Odom/ScanKeyFrameThr"       type="string" value="0.7"/>
@@ -116,7 +121,7 @@
         </node>
 
         
-      <node if="$(arg scan_cloud_assembling)" pkg="rtabmap_ros" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
+      <!-- <node if="$(arg scan_cloud_assembling)" pkg="rtabmap_ros" type="point_cloud_assembler" name="point_cloud_assembler" output="screen">
           <remap from="cloud"           to="/l515/depth/color/points"/>
           <remap from="odom"            to="odom"/>
           <param name="max_clouds"      type="int"    value="$(eval arg('scan_rate') / arg('rate'))" />
@@ -127,7 +132,7 @@
           <param name="noise_min_neighbors" type="int"    value="5"/>
           <param name="approx_sync" value="false"/>
 
-      </node>
+      </node> -->
 
 
     <!-- RTABMAP NODE  -->
@@ -136,23 +141,23 @@
         <param name="rtabmap_args"       value="--delete_db_on_start
                                             --SURF/HessianThreshold 100"/>
 
-        <param name="Grid/FromDepth" type="string" value="true"/> <!-- occupancy grid map from cloud projection -->
-        <param name="subscribe_scan_cloud" type="bool" value="true"/>
-        <param name="depth_topic" value="/l515/aligned_depth_to_color/image_raw" />
         
-        <param name="camera_info_topic" value="/l515/color/camera_info" />
-
         <param name="frame_id"             type="string" value="$(arg frame_id)"/>  
         <param name="subscribe_depth"      type="bool" value="false"/>
+        <param name="subscribe_scan_cloud" type="bool" value="true"/>
+        
+        <!-- subscribe_rgbd 를 하면 라이다로 데이터를 저장 못함- 하늘색으로 안 바뀜 (다른 파라미터랑 충돌?) -->
+        <!-- <param name="subscribe_rgbd" type="bool" value="true"/> -->
+        
+        <param name="depth_topic" value="/l515/aligned_depth_to_color/image_raw" />
+       
+        <param name="camera_info_topic" value="/l515/color/camera_info" />
         
         <param name="approx_sync"          type="bool" value="false"/>
         <remap from="imu"           to="$(arg imu_topic)"/>
 
         <remap if="$(arg scan_cloud_assembling)" from="scan_cloud" to="assembled_cloud"/>
         <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
-        
-        <!-- <remap if="$(arg scan_cloud_assembling)" from="scan_cloud" to="assembled_cloud"/>
-        <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/> -->
 
         <param if="$(arg use_t265)" name="subscribe_rgb" value="true"/>
         <param unless="$(arg use_t265)" name="subscribe_rgb" value="false"/>
@@ -161,8 +166,9 @@
         
         <!-- RTAB-Map's parameters -->
         <param name="Rtabmap/DetectionRate"          type="string" value="$(arg rate)"/>  
-        <param name="RGBD/NeighborLinkRefining"      type="string" value="false"/>
+        <param name="RGBD/NeighborLinkRefining"      type="string" value="true"/>
         <param name="RGBD/ProximityBySpace"          type="string" value="true"/>
+        <param name="RGBD/OptimizeFromGraphEnd" type="string" value="false"/>
         <param name="RGBD/ProximityMaxGraphDepth"    type="string" value="0"/>
         <param name="RGBD/ProximityPathMaxNeighbors" type="string" value="1"/>
         <param name="RGBD/AngularUpdate"             type="string" value="0.05"/>
@@ -173,12 +179,14 @@
         <!-- Reg/Strategy 파라미터  0=Visual, 1=ICP, 2=Visual+ICP -->
         <param name="Reg/Strategy"                   type="string" value="1"/> 
         
+        <param name="Grid/FromDepth" type="string" value="false"/> 
+        <!-- Grid/FromDepth occupancy grid from lidar -->
+        <param name="Reg/Force3DoF"             type="string" value="true"/>
+
         <param name="Grid/CellSize"                  type="string" value="0.1"/>
         <param name="Grid/RangeMax"                  type="string" value="20"/>
         <param name="Grid/ClusterRadius"             type="string" value="1"/>
         <param name="Grid/GroundIsObstacle"          type="string" value="true"/>
-        
-        <!-- ICP parameters -->
         
         <param     if="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="false"/>
         <param unless="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="true"/>
@@ -186,22 +194,13 @@
       </node>
 
       <!-- RTABMAPVIZ NODE  -->
-      <node if="$(arg rtabmapviz)" name="rtabmapviz" pkg="rtabmap_ros" type="rtabmapviz" > <!-- output="screen" 뺨 -->
+      <node if="$(arg rtabmapviz)" name="rtabmapviz" pkg="rtabmap_ros" type="rtabmapviz" >
 
-        <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
-        <remap from="camera_info_topic" to="/camera/color/camera_info"/>
-        
-        <remap from="rgb_topic" to="/camera/color/image_raw"/>
-        <remap from="imu_topic" to="/rtabmap/imu"/>
-        <remap from="imu" to="/imu/data"/>
-
-        <remap from="scan_cloud" to="odom_filtered_input_scan"/>
-        <remap from="voxel_cloud" to="cloud"/>
-        <!-- <remap from="scan_cloud" to="/l515/depth/color/points"/> -->
-        
         <param name="frame_id" type="string" value="$(arg frame_id)"/>
         <param name="odom_frame_id" type="string" value="odom"/>
-        <param name="subscribe_odom_info" type="bool" value="false"/> <!-- 되는지 확인 하기 -->
+        <param name="subscribe_odom_info" type="bool" value="true"/> 
+        <param name="subscribe_scan_cloud" type="bool" value="true"/>
+        <param name="approx_sync" type="bool" value="false"/>
         <remap if="$(arg scan_cloud_assembling)" from="scan_cloud" to="assembled_cloud"/>
         <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
 
