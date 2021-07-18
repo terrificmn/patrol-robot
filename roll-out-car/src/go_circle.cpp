@@ -1,7 +1,5 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
-#include <turtlesim/TeleportAbsolute.h>
-#include <std_srvs/Empty.h>
 #include <iostream>
 using namespace std;
 
@@ -16,23 +14,20 @@ public:
         Sub = Nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 5, &GoCircle::msgCallback, this);
         Pub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
         // Pub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 5);
-        
     }
 
     void msgCallback(const geometry_msgs::Twist::ConstPtr &msg) {
     
         ros::Rate Loop_rate(10);
 
-
         int multipliedInputNum = 1.0;  // 사용자 거리 입력
         int counter = 0;
         const double PI= 3.14159265359;
         const double R = PI / 2;
+        double spinSpeed = 30;  // 한 바퀴 돌아가는 시간을 정해줌 -- Loop_rate(10)이면 잘 되는데 (1) 오차가 큼
 
         while(ros::ok()) {
             geometry_msgs::Twist cir;
-
-            double spinSpeed = 30;  // 한 바퀴 돌아가는 시간을 정해줌 -- Loop_rate(10)이면 잘 되는데 (1) 오차가 큼
             
             cir.angular.z =  (2.0 * PI) / spinSpeed;
             cir.linear.x = (multipliedInputNum * (2.0 * PI * R)) / spinSpeed;
