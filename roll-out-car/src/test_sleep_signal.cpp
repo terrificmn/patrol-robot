@@ -5,11 +5,14 @@
 class TestSleep {
 public:
     ros::Publisher Pub;
+    // ros::Subscriber Clock_sub; // timer 만들어보기
     ros::NodeHandle Nh;
 
     TestSleep() {
         std::cout << "test started" << std::endl;
         Pub = Nh.advertise<std_msgs::String>("/test_sleep_signal", 5, 10);
+        // Clock_sub = Nh.subscribe("/clock", 1,  &TestSleep::sub_clock, this); //timer용
+
     }
 
 };
@@ -46,3 +49,32 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+
+//////////////// 이하는 //////////////////////////
+/// 아두이노 코드 in sketchbook IDE
+
+// #include <ros/ros.h>
+// #include <std_msgs/String.h>
+// #include <std_msgs/UInt16.h>
+
+// #define BUTTON 8
+// #define LED 13
+
+// ros::NodeHandle node_handle;
+
+// std_msgs::String std_msg;
+// ros::Publisher signal_pub("sleepy_signal", &std_msg);
+
+// void setup() {
+//     node_handle.initNode();
+//     node_handle.advertise(signal_pub);
+// }
+
+// void loop() { 
+
+//     std_msg.data = "1";
+//     signal_pub.publish( &std_msg );
+//     node_handle.spinOnce();
+
+//     delay(100);
+// }
