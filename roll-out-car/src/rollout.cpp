@@ -5,6 +5,7 @@
 
 bool IsSleepingSignal = false;
 
+
 class RollOut {
 private:
     ros::Publisher Pub;
@@ -12,6 +13,18 @@ private:
     ros::Subscriber Sleep_sub;
     ros::NodeHandle Nh;
     
+    uint totalCounter = 0;
+    double counter = 0.0;
+    int switchCnt = 1;
+    const double ROTATION = 2.08; // fixed
+    double rotation = 0.0;
+    const double PI= 3.14159265359;
+    const double DISTANCE = 1.5;
+    const double LINEAR_SPEED = 0.3;
+    // double RotationForOnePointFive = 0.0; // not work as expected
+    bool isRotation = false;
+    int rotationCount = 1;
+    int stopCount = 1;
 
 public:
     //constructor
@@ -20,8 +33,8 @@ public:
         Sleep_sub = Nh.subscribe<std_msgs::String>("/test_sleep_signal", 5, &RollOut::sleepingCallback, this);
         Motion_sub = Nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 5, &RollOut::msgCallback, this);
 
-        Pub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10); //publisher 거북이 테스트
-        //Pub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10); //차 전용
+        //Pub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10); //publisher 거북이 테스트
+        Pub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10); //차 전용
     }
 
     void sleepingCallback(const std_msgs::String::ConstPtr &str_msg) {
@@ -40,19 +53,19 @@ public:
     void msgCallback(const geometry_msgs::Twist::ConstPtr &msg) {
         //
         ros::Rate Loop_rate(10);
-        //int counter = 0;
-        double counter = 0.0;
-        uint totalCounter = 0;
-        int switchCnt = 1;
-        const double ROTATION = 2.08; // fixed
-        double rotation = 0.0;
-        const double PI= 3.14159265359;
-        const double DISTANCE = 1.0;
-        const double LINEAR_SPEED = 0.2;
-        // double RotationForOnePointFive = 0.0; // not work as expected
-        bool isRotation = false;
-        int rotationCount = 1;
-        int stopCount = 1;
+        
+        // double counter = 0.0;
+        // uint totalCounter = 0;
+        // int switchCnt = 1;
+        // const double ROTATION = 2.08; // fixed
+        // double rotation = 0.0;
+        // const double PI= 3.14159265359;
+        // const double DISTANCE = 1.3;
+        // const double LINEAR_SPEED = 0.2;
+        // // double RotationForOnePointFive = 0.0; // not work as expected
+        // bool isRotation = false;
+        // int rotationCount = 1;
+        // int stopCount = 1;
 
         while(ros::ok()) {
             geometry_msgs::Twist rect;
@@ -76,6 +89,7 @@ public:
                 // 가야할 시간보다 카운터가 작으면  전진
                 } else if ((double)counter < movingTime) {
                     rect.linear.x = LINEAR_SPEED;
+                    std::cout << "MOVING OUT" << std::endl;
                 // 카운터가 시간보다 커지면 다시 초기화 및 각도 바꾸기
                 
                 } else {
@@ -91,10 +105,12 @@ public:
                     if(rotationCount % 11 != 0) {
                         ROS_INFO("totalcount %d", totalCounter);
                         // rotation slightly modified per 3 counts 
-                        if (totalCounter % 30 == 0) {  // because of 0.1 sec
+                        if (totalCounter % 20 == 0) {  // because of 0.1 sec
                             rotation = ROTATION + 0.01;
+                            std::cout << "++ MODIFIED" << std::endl;
                         } else {
                             rotation = ROTATION;
+                            std::cout << "None MODIFIED " << std::endl;
                         }
                         
                         rect.angular.z = (PI / rotation);
@@ -125,11 +141,14 @@ public:
                     rect.linear.x = 0.2;
                     rect.angular.z = - 0.5233;
                      std::cout << "Signal True: rect.linear.x = " << rect.linear.x << std::endl;
-                    
-                } else if (stopCount > 40 && stopCount < 60) {
+                
+                } else if (stopCount > 40 && stopCount < 75) {
                     rect.linear.x = 0.1;
-                    rect.angular.z = 0.5233;
-                } else if (stopCount > 60 && stopCount < 70) {
+                    rect.angular.z = 0.0;
+                } else if (stopCount > 75 && stopCount < 95) {
+                    rect.linear.x = 0.1;
+                    rect.angular.z = 0.4933;
+                } else if (stopCount > 95 && stopCount < 130) {
                     rect.linear.x = 0.1;
                     rect.angular.z = 0.0;
                 } else {
@@ -152,11 +171,14 @@ public:
             Pub.publish(rect);
             //counter++;
             counter += 0.1;
+            ROS_ERROR("counter %lf", counter);
             totalCounter++;
             Loop_rate.sleep();
+
             // spinOnce를 해줘야지 한번 멈췄다가 subscribe를 잘 하는 듯 하다
-            ros::spinOnce();
+            ros::spinOnce();    
         }
+        
     }
 };
 

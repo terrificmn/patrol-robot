@@ -25,6 +25,8 @@ public:
         const double PI= 3.14159265359;
         const double R = PI / 2;
         double spinSpeed = 30;  // 한 바퀴 돌아가는 시간을 정해줌 -- Loop_rate(10)이면 잘 되는데 (1) 오차가 큼
+        // 1.0 --> spinSpeed 10 = linear.x = 0.98 === too fast 
+        // 1.0 --> spinSpeed 30 = linear.x = 0.3?
 
         while(ros::ok()) {
             geometry_msgs::Twist cir;
