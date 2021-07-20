@@ -51,21 +51,7 @@ public:
     }
 
     void msgCallback(const geometry_msgs::Twist::ConstPtr &msg) {
-        //
         ros::Rate Loop_rate(10);
-        
-        // double counter = 0.0;
-        // uint totalCounter = 0;
-        // int switchCnt = 1;
-        // const double ROTATION = 2.08; // fixed
-        // double rotation = 0.0;
-        // const double PI= 3.14159265359;
-        // const double DISTANCE = 1.3;
-        // const double LINEAR_SPEED = 0.2;
-        // // double RotationForOnePointFive = 0.0; // not work as expected
-        // bool isRotation = false;
-        // int rotationCount = 1;
-        // int stopCount = 1;
 
         while(ros::ok()) {
             geometry_msgs::Twist rect;
@@ -140,7 +126,7 @@ public:
                 } else if (stopCount > 22 && stopCount < 40) {
                     rect.linear.x = 0.2;
                     rect.angular.z = - 0.5233;
-                     std::cout << "Signal True: rect.linear.x = " << rect.linear.x << std::endl;
+                    std::cout << "Signal True: rect.linear.x = " << rect.linear.x << std::endl;
                 
                 } else if (stopCount > 40 && stopCount < 75) {
                     rect.linear.x = 0.1;
