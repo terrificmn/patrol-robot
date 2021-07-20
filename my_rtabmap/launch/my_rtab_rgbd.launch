@@ -1,0 +1,68 @@
+<launch>
+    <!-- HD MODE? true/false  -->
+    <arg name="HD" value="false"/>
+    <!-- Use PointCLoud ASSEMBLER? t/f  -->
+    <arg name="assemble" value="false"/>
+    <!-- Detection Rate  -->
+    <arg name="rate" value ="2"/>
+    <arg name="gravity" default="3.0"/>    <!-- set between 1 and 10 to enable gravity optimization -->
+    <arg name="max_size" default="1500000"/> <!-- try between 10000 and 100000 -->
+    <param name="/l515/motion_module/global_time_enabled" value="true" />
+    <param  name="/l515/rgb_camera/global_time_enabled" value="true" />
+    <!-- Launch l515  -->
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="unite_imu_method" value="linear_interpolation"/>
+        <arg name="enable_pointcloud" value="true"/>
+        <arg name="camera" value="l515"/>
+      <!--  <arg name="filters" value="pointcloud"/> -->
+        <arg name="accel_fps" value="100"/>
+        <arg name="gyro_fps" value="100"/>
+        <arg name="align_depth" value="false"/>        
+
+
+        <!-- High DEF CAM -->
+        <arg if="$(arg HD)" name="depth_width" value="1024"/>
+        <arg if="$(arg HD)" name="depth_height" value="768"/>
+        <arg if="$(arg HD)" name="infra_width" value="1024"/>
+        <arg if="$(arg HD)" name="infra_height" value="768"/>
+        <arg if="$(arg HD)" name="color_width" value="1920"/>
+        <arg if="$(arg HD)" name="color_height" value="1080"/>        
+
+        <!-- STANDARD DEF CAM -->
+        <arg unless="$(arg HD)" name="depth_width" value="640"/>
+        <arg unless="$(arg HD)" name="depth_height" value="480"/>
+        <arg unless="$(arg HD)" name="infra_width" value="640"/>
+        <arg unless="$(arg HD)" name="infra_height" value="480"/>
+        <arg unless="$(arg HD)" name="color_width" value="1280"/>
+        <arg unless="$(arg HD)" name="color_height" value="720"/>
+    </include>
+
+    <!-- LAUNCH RTAB MAP  -->
+    <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+        <arg name="use_sim_time" value="false"/>
+        <arg name="depth_topic" value="/l515/aligned_depth_to_color/image_raw"/>
+        <arg name="rgb_topic" value="/l515/color/image_raw"/>
+        <arg name="camera_info_topic" value="/l515/color/camera_info"/>
+        <arg name="frame_id" value="l515_link"/>
+        <arg name="approx_sync" value="false"/>
+        <arg name="wait_imu_to_init" value="true"/>
+        <arg name="args" value="-d"/>
+
+
+	<!-- 0=Frame-to-Map (F2M) 1=Frame-to-Frame (F2F) -->
+	<param name="Odom/Strategy" value="1"/>
+	<!-- Correspondences: 0=Features Matching, 1=Optical Flow -->
+	<param name="Vis/CorType" value="1"/>
+
+	<!-- maximum features extracted by image, default 1000 -->
+	<param name="Vis/MaxFeatures" type="string" value="600"/>
+    </include>
+
+    <node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_node">
+        <remap from="imu/data_raw" to="/l515/imu"/>
+    </node>
+    <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgbd_odometry">
+        <param name="GFTT/MinDistance" type="string" value="10"/> <!-- default 5 pixels -->
+    </node>
+
+</launch>

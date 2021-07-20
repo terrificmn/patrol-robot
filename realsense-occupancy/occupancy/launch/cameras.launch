@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find realsense2_camera)/launch/rs_l515_and_t265.launch">
+      <arg name="serial_no_camera1" value="943222110188"/> 			<!-- Note: Replace with actual serial number (camera1 default: t265)-->
+      <arg name="serial_no_camera2" value="f0460650"/> 			<!-- Note: Replace with actual serial number (camera2 default: d400)-->
+    </include>
+</launch>

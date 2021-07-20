@@ -1,0 +1,189 @@
+<launch>
+    <!-- use_sim_time?! T/F  -->
+    <arg name="sim_time" value="false"/>
+    <arg name="use_t265" value="true"/>
+    <!-- start l515 -->
+    <param unless="$(arg sim_time)" name="/l515/motion_module/global_time_enabled" value="true" />
+    <param unless="$(arg sim_time)" name="/l515/rgb_camera/global_time_enabled" value="true" />
+    <param unless="$(arg sim_time)" name="/l515/rgb_camera/enable_auto_exposure" value="false"/>
+    <param unless="$(arg sim_time)" name="/l515/l500_depth_sensor/sensor_mode" value ="0"/>
+    <!-- <param unless="$(arg sim_time)" name="/l515/rgb_camera/gain" value ="4096"/> -->
+    <!-- HD MODE? true/false  --> 
+    <arg name="is_hd" value="false"/>
+    <!-- Launch l515  -->  
+    <include unless="$(arg sim_time)" file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="serial_no" value="f0460650"/>
+        <arg name="camera" value="l515"/>
+        <arg name="align_depth" value="true"/>
+        <arg name="unite_imu_method" value="linear_interpolation"/>
+        <arg name="enable_gyro" value="true"/>
+        <arg name="enable_accel" value="true"/>
+        <arg name="filters" value="pointcloud"/>
+        <arg name="color_fps" value="30"/>
+        <arg name="pointcloud_texture_stream" value="RS2_STREAM_ANY"/>
+
+        <!-- High DEF CAM -->
+        <arg if="$(arg is_hd)" name="depth_width" value="1024"/>
+        <arg if="$(arg is_hd)" name="depth_height" value="768"/>
+        <arg if="$(arg is_hd)" name="color_width" value="1920"/>
+        <arg if="$(arg is_hd)" name="color_height" value="1080"/>
+        <!-- STANDARD DEF CAM --> <!-- 여기 선택됨 -->
+        <arg unless="$(arg is_hd)" name="depth_width" value="640"/>
+        <arg unless="$(arg is_hd)" name="depth_height" value="480"/>
+        <arg unless="$(arg is_hd)" name="color_width" value="1280"/>
+        <arg unless="$(arg is_hd)" name="color_height" value="720"/>
+    </include>
+
+    <node if="$(arg use_t265)" pkg="tf" type="static_transform_publisher" name="static_tf" args="0 0 0.05 0 0 0 t265_link l515_link 10" />
+    <node if="$(arg sim_time)" pkg="tf" type="static_transform_publisher" name="static_tf_1" args="0 0 0 0 0 0 t265_pose_frame t265_link 10" />
+
+    <param if="$(arg use_t265)" name="/t265/tracking_module/enable_mapping" value="false"/>
+    <param name="/t265/realsense2_camera/enable_relocalization" type="bool" value="false"/>
+    <include if="$(arg use_t265)" file="$(find realsense2_camera)/launch/rs_t265.launch">
+        <arg name="serial_no" value="943222110188"/>
+        <arg name="camera" value="t265"/>
+        <arg name="unite_imu_method" value="linear_interpolation"/>
+        <arg name="enable_fisheye1" value="false"/>
+        <arg name="enable_fisheye2" value="false"/>
+        <arg name="enable_sync" value="true"/>
+        <arg name="publish_odom_tf" value="true"/>          
+    </include>
+
+    <arg name="rtabmapviz"    default="true"/>
+    <arg name="scan_rate"    default="30"/>
+    <arg name="rate"            value="2"/>
+    <arg if="$(arg sim_time)" name="use_sim_time" value="true"/>
+    <arg name="scan_cloud_assembling" value="false"/>
+    <arg name="use_imu" value="true"/>
+    <arg name="imu_topic" value="/imu/data"/>
+    <arg name="frame_id" default="l515_link"/>
+    <arg name="voxel_size" value="0.05"/>
+    <!-- individual scan max size -->
+    <arg name="scan_cloud_max_points" value="0"/>
+    <arg name="wait_imu_to_init" value="true"/>
+    <arg name="localization"      default="false"/>
+    
+    <!-- <node pkg="imu_complementary_filter" type="complementary_filter_node" name="complementary_filter_node"> -->
+    <!-- <remap from="imu/data_raw" to="/l515/imu"/> -->
+      <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node">
+        <param name="use_mag" value="false"/>
+        <param name="publish_tf" value="false"/>
+        <param name="world_frame" value="enu" />
+        <remap from="/imu/data_raw" to="/t265/imu"/>
+      </node>
+
+    <node pkg="nodelet" type="nodelet" name="rtabmap_ros_points_xyz" args="standalone rtabmap_ros/point_cloud_xyz" output="screen">
+        <param name="approx_sync" value="false"/>
+        <param name="/depth/camera_info" value="/l515/depth/camera_info" />
+        <remap from="/depth/image" to="/l515/depth/image_rect_raw"/>
+        <param name="decimation" value="4"/>
+    </node>
+    
+
+    <group ns="rtabmap">
+      <node pkg="rtabmap_ros" type="icp_odometry" name="icp_odometry" output="screen">
+          <!-- point_xyz에서 cloud로 보내는지 확인해볼 것 -->
+          <!-- <remap from="scan_cloud_topic" to="/cloud"/> -->
+          <remap from="scan_cloud" to="/l515/depth/color/points"/>  <!-- 중요 여기 리맵을 해야지~ 포인트 클라우드가 나옴 -->
+          <!-- 리맵을 해줘야하지 /imu/data로 /rtabmap/rtabmap 으로 연결되는 듯 하다-->
+          <remap from="imu"           to="$(arg imu_topic)"/>
+
+          <param name="frame_id" type="string" value="$(arg frame_id)"/>  
+          <param name="publish_tf"          type="bool"   value="true"/>
+           <param name="rgb_topic" type="string" value="/l515/color/image_raw"/>
+          <!-- <param name="scan_cloud_max_points"       type="int"    value="$(arg scan_cloud_max_points)"/> -->
+
+          <!-- ICP parameters -->
+          <param name="scan_voxel_size" value="$(arg voxel_size)"/>
+          <!-- <param name="Icp/VoxelSize"           type="string" value="$(arg voxel_size)"/>   -->
+          <!-- scan_voxel_size는 Icp/VoxelSize로 하는게 괜찮다고 하는 듯-->
+          <param name="Icp/PointToPlane" type="bool" value="true"/>  <!-- 빨간 표시 확인해 볼것 -->
+          <param name="Icp/Epsilon"             type="string" value="0.005"/>
+          <param name="Icp/OutlierRatio"    type="string" value="0.65" />
+          <param name="Icp/PointToPlaneK"       type="string" value="20"/>
+          <param name="Icp/PointToPlaneRadius"  type="string" value="0"/> 
+          <param name="Icp/PointToPlaneMinComplexity" type="string" value="0"/> 
+          <param name="Icp/CorrespondenceRatio" type="string" value="0.2"/>
+          <param name="Icp/MaxCorrespondenceDistance" type="string" value="0.1"/>
+
+          <!-- Odom parameters -->       
+          <param name="Odom/ScanKeyFrameThr"       type="string" value="0.7"/>
+          <param name="Odom/Strategy"              type="string" value="0"/>
+          <!-- Max Size of Global Map to keep in "history" -->
+          <param name="OdomF2M/ScanMaxSize"        type="string" value="15000"/>   
+        </node>
+
+    <!-- RTABMAP NODE  -->
+    
+      <node pkg="rtabmap_ros" type="rtabmap" name="rtabmap" output="screen" args="-d">	  
+        <param name="rtabmap_args"       value="--delete_db_on_start
+                                            --SURF/HessianThreshold 100"/>
+
+        
+        <param name="frame_id"             type="string" value="$(arg frame_id)"/>  
+        <param name="subscribe_depth"      type="bool" value="false"/>
+        <param name="subscribe_scan_cloud" type="bool" value="true"/>
+        
+        <!-- subscribe_rgbd 를 하면 라이다로 데이터를 저장 못함- 하늘색으로 안 바뀜 (다른 파라미터랑 충돌?) -->
+        <!-- <param name="subscribe_rgbd" type="bool" value="true"/> -->
+        
+        <param name="depth_topic" value="/l515/aligned_depth_to_color/image_raw" />
+       
+        <param name="camera_info_topic" value="/l515/color/camera_info" />
+        
+        <param name="approx_sync"          type="bool" value="false"/>
+        <remap from="imu"           to="$(arg imu_topic)"/>
+
+        <remap if="$(arg scan_cloud_assembling)" from="scan_cloud" to="assembled_cloud"/>
+        <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
+
+        <param if="$(arg use_t265)" name="subscribe_rgb" value="true"/>
+        <param unless="$(arg use_t265)" name="subscribe_rgb" value="false"/>
+        <remap if="$(arg use_t265)" from="rgb/image"   to="/l515/color/image_raw" />
+        <remap if="$(arg use_t265)" from="rgb/camera_info" to="/l515/color/camera_info"/>
+        
+        <!-- RTAB-Map's parameters -->
+        <param name="Rtabmap/DetectionRate"          type="string" value="$(arg rate)"/>  
+        <param name="RGBD/NeighborLinkRefining"      type="string" value="true"/>
+        <param name="RGBD/ProximityBySpace"          type="string" value="true"/>
+        <param name="RGBD/OptimizeFromGraphEnd" type="string" value="false"/>
+        <param name="RGBD/ProximityMaxGraphDepth"    type="string" value="0"/>
+        <param name="RGBD/ProximityPathMaxNeighbors" type="string" value="1"/>
+        <param name="RGBD/AngularUpdate"             type="string" value="0.05"/>
+        <param name="RGBD/LinearUpdate"              type="string" value="0.05"/>
+        <param name="Mem/NotLinkedNodesKept"         type="string" value="false"/>
+        <param name="Mem/STMSize"                    type="string" value="30"/>
+        
+        <!-- Reg/Strategy 파라미터  0=Visual, 1=ICP, 2=Visual+ICP -->
+        <param name="Reg/Strategy"                   type="string" value="1"/> 
+        
+        <param name="Grid/FromDepth" type="string" value="false"/> 
+        <!-- Grid/FromDepth occupancy grid from lidar -->
+        <param name="Reg/Force3DoF"             type="string" value="true"/>
+
+        <param name="Grid/CellSize"                  type="string" value="0.1"/>
+        <param name="Grid/RangeMax"                  type="string" value="20"/>
+        <param name="Grid/ClusterRadius"             type="string" value="1"/>
+        <param name="Grid/GroundIsObstacle"          type="string" value="true"/>
+        
+        <param     if="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="false"/>
+        <param unless="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="true"/>
+        <param name="Mem/InitWMWithAllNodes" type="string" value="$(arg localization)"/>
+      </node>
+
+      <!-- RTABMAPVIZ NODE  -->
+      <node if="$(arg rtabmapviz)" name="rtabmapviz" pkg="rtabmap_ros" type="rtabmapviz" >
+
+        <param name="frame_id" type="string" value="$(arg frame_id)"/>
+        <param name="odom_frame_id" type="string" value="odom"/>
+        <param name="subscribe_odom_info" type="bool" value="true"/> 
+        <param name="subscribe_scan_cloud" type="bool" value="true"/>
+        <param name="approx_sync" type="bool" value="false"/>
+        <remap if="$(arg scan_cloud_assembling)" from="scan_cloud" to="assembled_cloud"/>
+        <remap unless="$(arg scan_cloud_assembling)" from="scan_cloud" to="/l515/depth/color/points"/>
+
+      </node>
+
+    
+  </group>
+</launch>

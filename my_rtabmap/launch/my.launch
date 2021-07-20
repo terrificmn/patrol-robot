@@ -1,0 +1,102 @@
+<launch>
+
+    <arg name="device_type_camera1"    		default="t265"/>
+    <arg name="device_type_camera2"    		default="l515"/>	<!-- Note: using regular expression. match D435, D435i, D415... -->
+    <arg name="serial_no_camera1"    			default="943222110188"/>
+    <arg name="serial_no_camera2"    			default="f0460650"/>
+    <arg name="camera1"              			default="t265"/>		<!-- Note: Replace with camera name -->
+    <arg name="camera2"              			default="l515"/>		<!-- Note: Replace with camera name -->
+    <arg name="clip_distance"             default="-2"/>
+    <arg name="use_rviz"                  default="true"/>
+    <arg name="use_rtabmapviz"            default="false"/>
+    <arg name="rgbd_odometry"     default="false"/>
+    <arg name="simulation"        default="false"/>
+    <arg name="sw_registered"     default="false"/>
+    <arg name="localization"      default="false"/>
+    
+    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" /> -->
+
+<!-- rs-l515_and_t265.launch need to be created in a realsense2-camera pkg -->
+    <include file="$(find realsense2_camera)/launch/rs_l515_and_t265.launch">
+            <arg name="device_type_camera1"             value="$(arg device_type_camera1)"/>
+            <arg name="device_type_camera2"             value="$(arg device_type_camera2)"/>
+            <arg name="serial_no_camera1"               value="$(arg serial_no_camera1)"/>
+            <arg name="serial_no_camera2"               value="$(arg serial_no_camera2)"/>
+            <arg name="camera1"                         value="$(arg camera1)"/>
+            <arg name="camera2"                         value="$(arg camera2)"/>
+            <arg name="clip_distance"                   value="$(arg clip_distance)"/>
+
+            <!-- need be modified and try out below -->
+            <!-- need be modified and try out-->
+            <!-- need be modified and try out-->
+            <!-- <arg name="unite_imu_method"> --> <!-- trying-->
+            <!-- <arg name="align_depth" value="true"/> 
+            <arg name="filters" value="pointcloud"/> -->
+            <!-- <arg name="hold_back_imu_for_frames" />  -->
+            
+    </include>
+<!-- <remap from="imu/data_raw" to="/t265/imu"/> 효과없음 -->
+
+    <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+        <!-- <param name="Grid/RangeMax"              type="string" value="6.0"/> -->
+        <!-- Visual Odometry Stategy into Frame to Frame 로 바꿈 -->
+        <param name="Odom/Strategy"              type="string" value="1"/>
+
+            <arg name="rtabmap_args"       value="--delete_db_on_start
+                                            --SURF/HessianThreshold 100"/>
+
+            <arg name="depth_topic"        value="/$(arg camera2)/aligned_depth_to_color/image_raw"/>
+            <arg name="frame_id"           value="$(arg camera2)_link"/>
+            <arg name="visual_odometry"    value="false"/> <!-- odom_topic으로 연결됨 t265/odom/sample-->
+            
+
+            <arg name="rgbd_sync"          value="true"/>
+            <arg name="approx_rgbd_sync"   value="false"/>
+            <arg name="rgbd_decimation"         default="1" />
+
+            <!-- <arg name="approx_sync"        value="false"/> 이놈을 false로 주면 연동이 2개 센서가 연동이 안되는 듯-->
+            <arg name="odom_tf_angular_variance" value="0.0001"/>
+		    <arg name="odom_tf_linear_variance" value="0.0001"/>
+            
+            <!-- Reduce Point Cloud Noises -->
+            <param name="cloud_noise_filtering_radius" value="0.05"/>
+            <param name="cloud_noise_filtering_min_neighbors" value="2"/>
+            <!-- Change inital costmap size for move_base -->
+	        <param name="Reg/Force3DoF"    value="true" />
+	        <param name="Optimizer/Slam2D" value="true" />
+            
+            <param name="proj_max_height" value="2.0"/>
+	        <param name="proj_max_ground_height" value="0.1"/>
+            <param name="Rtabmap/DetectionRate" type="string" value="2"/>
+            <param name="use_action_for_goal" type="bool" value="true"/>
+            <param name="proj_min_cluster_size" value="40"/>
+            
+            <param name="RGBD/NeighborLinkRefining" type="string" value="true"/>
+            <param name="RGBD/ProximityBySpace"     type="string" value="true"/>
+            <param name="Grid/FromDepth"            type="string" value="true"/>  <!-- 클라우드 뎁스로부터 grid_map생성, false면 laser scan으로 부터생성 -->
+            <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->
+
+            <param name="subscribe_scan_cloud" type="bool" defaule="true"/>
+            <remap from="scan_cloud" to="/l515/depth/color/points"/>
+            
+            <arg name="odom_topic"         value="/$(arg camera1)/odom/sample"/>
+            
+            <!-- <remap from="odom_frame_id" to="odom"/> -->
+            
+            
+            <arg name="rgb_topic"          value="/$(arg camera2)/color/image_raw"/>
+            <arg name="camera_info_topic"  value="/$(arg camera2)/color/camera_info"/>
+            <arg name="queue_size"         value="200"/>
+
+            <param     if="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="false"/>
+            <param unless="$(arg localization)" name="Mem/IncrementalMemory" type="string" value="true"/>
+            <param name="Mem/InitWMWithAllNodes" type="string" value="$(arg localization)"/>
+
+            <arg name="rviz"               value="$(arg use_rviz)"/>
+            <arg name="rtabmapviz"         value="$(arg use_rtabmapviz)"/>
+    </include>
+
+    <node name="filtered_odom" pkg="my_rtabmap" type="filtered_odom" />
+
+
+</launch>
