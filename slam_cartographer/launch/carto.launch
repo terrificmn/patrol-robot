@@ -67,6 +67,8 @@
     <!-- <remap from="scan" to="/spin_laser/scan" /> -->
     <!-- 카토그래퍼에서 원하는 것은 scan이라는 토픽인데, 센서에 맞춰서 (to 를 바꿔줘야함) -->
     <!-- 3d에서 2d로 변환함-->
+    <혹시 scan이 pointcloud_to_laserscan_node 에서 퍼블리싱을 하므로 확인 후에 겹쳐서 코드를 바꿀 수 있음
+    시도해 보기> 
     <remap from="scan" to="/scan" />
     <!-- <remap from="imu" to="/imu/data" /> -->
     <remap from="imu" to="/t265/imu" />
