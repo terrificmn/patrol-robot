@@ -69,7 +69,8 @@
     <!-- publish는 scan으로 다시 내보내줌 , from과 to가 헤깔리지만 from이 노드에서 서브스크라이브 함-->
   </node>
 
-  
+  map과 odom 연결해주는 것 시도해보기 odom과 연결하는 것이 아니라 base_link 일 수도 있음
+  <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 map odom 100" />
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_t265_link" args="0 0 0 0 0 0 base_link $(arg tf_prefix)_link 100" />
   <!-- <node pkg="tf" type="static_transform_publisher" name="base_link_to_t265_odom_frame" args="0 0 0 0 0 0 base_link t265_odom_frame 100" /> -->
   <node if="$(arg use_t265)" pkg="tf" type="static_transform_publisher" name="static_tf" args="0 0 0.05 0 0 0 t265_link l515_link 100" />
