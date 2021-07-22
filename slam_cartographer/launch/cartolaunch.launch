@@ -1,0 +1,31 @@
+<launch>
+  <node name="cartographer_node" pkg="cartographer_ros"
+      type="cartographer_node" args="
+          -configuration_directory $(find slam_cartographer)/config
+          -configuration_basename summit.lua"
+      output="screen">
+    <!-- <remap from="scan" to="/spin_laser/scan" /> -->
+    <!-- 카토그래퍼에서 원하는 것은 scan이라는 토픽인데, 센서에 맞춰서 (to 를 바꿔줘야함) -->
+    <!-- 3d에서 2d로 변환함-->
+    <!-- <혹시 scan이 pointcloud_to_laserscan_node 에서 퍼블리싱을 하므로 확인 후에 겹쳐서 코드를 바꿀 수 있음 
+    시도해 보기>  -->
+    <remap from="scan" to="/scan" />
+    <!-- <remap from="imu" to="/imu/data" /> -->
+    <remap from="imu" to="/t265/imu" />
+    <!-- 필터노드 사용안 할 시에는 to를 /t265/imu 준다 -->
+    <remap from="odom" to="/t265/odom/sample" />
+    <!-- <remap from="points2" to="/l515/depth/color/points" /> -->
+  </node>
+
+<!-- 거북이 넣기 아직 구현안함 -->
+<!-- <arg name="is_turtlesim" value="false"/> -->
+<!-- 문법찾아야함 노드로 실행하는 법<include unless="$(arg is_turtlesim)" file="$(find turtlesim)/launch/rs_camera.launch"> -->
+
+
+  <node name="rviz" pkg="rviz" type="rviz" required="true"
+        args="-d $(find cartographer_ros)/configuration_files/summit.rviz" />
+  
+  <!-- 맵 생성 관련 -->
+  <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
+      type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
+</launch> 
