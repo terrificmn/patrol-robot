@@ -1,0 +1,11 @@
+<launch>
+    <include file="$(find scout_base)/launch/scout_base.launch" >
+        <arg name="port_name" default="/dev/ttyUSB0" />
+        <arg name="simulated_robot" default="false" />
+    </include>
+
+    <node pkg="roll-out-car" type="rollout" name="rollout" output="screen"/>
+    
+    <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop_twist_keyboard" />
+
+</launch>
