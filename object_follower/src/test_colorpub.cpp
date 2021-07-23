@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "test_color_pub");
     // instance
     ros::NodeHandle nh;
-    ros::Publisher pub = nh.advertise<std_msgs::Int32MultiArray>("/color_tracker_test", 10); // 거북이 테스트용;
+    ros::Publisher pub = nh.advertise<std_msgs::Int32MultiArray>("/color_tracker_dummy", 10); // 거북이 테스트용;
     
     ros::Rate Loop_rate(1);
     std_msgs::Int32MultiArray localTest;
@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
         //     //localTest.data.push_back(rand() % 255);
         //     localTest.data.push_back(rand() % 255);
         // }
-        std::cout << "published :" << localTest.data[0] << "  ";
-        std::cout << "published :" << localTest.data[1] << std::endl;
+        std::cout << "test published :" << localTest.data[0] << "  ";
+        std::cout << "test published :" << localTest.data[1] << std::endl;
         
         pub.publish(localTest);
     }
