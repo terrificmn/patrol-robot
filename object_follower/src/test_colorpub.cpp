@@ -11,22 +11,24 @@ int main(int argc, char **argv) {
     ros::Rate Loop_rate(1);
     std_msgs::Int32MultiArray localTest;
     
-    /*
-    뭔가 잘못됨 수정해야함
-    erminate called after throwing an instance of 'ros::InvalidNameException'
-    what():  Character [-] at element [4] is not valid in Graph Resource Name [test-color-pub].  Valid characters are a-z, A-Z, 0-9, / and _.
-    Aborted (core dumped)
-    이부분
-    */
-
+    localTest.data.clear();
+    
     while(ros::ok()) {
-        localTest.data[0] = 10;
-        localTest.data[1] = 20;
-        std::cout << "published :" << localTest.data[0] << std::endl;
+        
+        localTest.data.push_back(50);
+        localTest.data.push_back(20);
+        // localTest.data[1] = 20;
+        // for (int i=0; i< 100; i++) {
+        //     // 그냥 랜덤하게 넣어주기
+        //     //localTest.data.push_back(rand() % 255);
+        //     localTest.data.push_back(rand() % 255);
+        // }
+        std::cout << "published :" << localTest.data[0] << "  ";
         std::cout << "published :" << localTest.data[1] << std::endl;
+        
         pub.publish(localTest);
     }
     
-    ros::spin();
+    ros::spinOnce();
     return 0;
 }
