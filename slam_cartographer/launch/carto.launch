@@ -1,30 +1,56 @@
 <launch>
+  <param name="robot_description" textfile="$(find slam_cartographer)/urdf/scout_mini.urdf" />
+  
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
   <arg name="use_t265" value="true"/>
   <arg name="use_l515" value="true"/>
   <arg name="is_hd" value="false"/>
+  <arg name="tf_prefix" value="t265" />
+  <arg name="odom_frame_id" value="odom" />
+  <arg name="base_frame_id" value="$(arg tf_prefix)_link" />
+  <arg name="pose_frame_id" value="$(arg tf_prefix)_pose_frame" />
+  <arg name="topic_odom_in"         default="/t265/odom/sample"/>
+  <arg name="publish_odom_tf" value="true"/>  
+
+  <rosparam>
+      /camera/tracking_module/enable_pose_jumping: false
+  </rosparam>
+
 
   <include if="$(arg use_t265)" file="$(find realsense2_camera)/launch/rs_t265.launch">
         <arg name="serial_no" value="943222110188"/>
         <arg name="camera" value="t265"/>
+        <arg name="linear_accel_cov"      default="0.01"/>
         <arg name="unite_imu_method" value="linear_interpolation"/>
         <arg name="enable_fisheye1" value="false"/>
         <arg name="enable_fisheye2" value="false"/>
-        <arg name="enable_sync" value="true"/>
-        <arg name="publish_odom_tf" value="true"/>          
+        <arg name="enable_sync" value="false"/>
+
+        
+        <arg name="gyro_fps"            default="200"/>
+        <arg name="accel_fps"           default="62"/>
+        <arg name="enable_gyro"         default="true"/>
+        <arg name="enable_accel"        default="true"/>
+        <!-- true이면 odom부터 트리가 시작됨 그래서 false로 해야 base_link로 트리를 연결시킬 수 있다고 함-->
+         <!-- 그래야 camera pose_frame has a single parent: a base_link 로 할 수 있다고 함 -->
+        <!-- 또는 enable_pose_jumping 를 false로  로스파라미터를 사용할 수 있다고 함 -->
+
   </include>
   <!-- rs_t265를 실행할 때 원래  unite_imu_method 에는 값이 안들어가 있어서 아규먼트를 안넘기면 /t265/imu가 안나오는 듯  -->
 
-  <!-- <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node">
+  <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node">
         <param name="use_mag" value="false"/>
         <param name="publish_tf" value="false"/>
         <param name="world_frame" value="enu" />
         <remap from="/imu/data_raw" to="/t265/imu"/>
-  </node> -->
+        <!-- 서브스크라이브를 /imu/data_raw로 하고 퍼블리시는 imu/data로 해준다 -->
+  </node>
 
    <include if="$(arg use_l515)" file="$(find realsense2_camera)/launch/rs_camera.launch">
         <arg name="serial_no" value="f0460650"/>
         <arg name="camera" value="l515"/>
-        <arg name="align_depth" value="true"/>
+        <arg name="align_depth" value="false"/>
         <arg name="unite_imu_method" value="linear_interpolation"/>
         <arg name="enable_gyro" value="false"/>
         <arg name="enable_accel" value="false"/>
@@ -41,25 +67,24 @@
         <arg unless="$(arg is_hd)" name="depth_width" value="640"/>
         <arg unless="$(arg is_hd)" name="depth_height" value="480"/>
         <arg unless="$(arg is_hd)" name="color_width" value="1280"/>
-        <arg unless="$(arg is_hd)" name="color_height" value="720"/>
     </include>
-
-
-  <node if="$(arg use_t265)" pkg="tf" type="static_transform_publisher" name="static_tf" args="0 0 0.05 0 0 0 t265_link l515_link 100" />
-  <!-- <node if="$(arg use_t265)" pkg="tf" type="static_transform_publisher" name="static_tf" args="0 0 0.05 0 0 0 world map 10" />
-  <node if="$(arg use_t265)" pkg="tf" type="static_transform_publisher" name="base_to_laser" args="0 0 0.05 0 0 0 base_link l515 10" /> -->
 
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan_node">
     <remap from="cloud_in" to="/l515/depth/color/points" />
     <!-- publish는 scan으로 다시 내보내줌 , from과 to가 헤깔리지만 from이 노드에서 서브스크라이브 함-->
   </node>
 
-
-  <!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" /> -->
-
-
-
-  <node name="cartographer_node" pkg="cartographer_ros"
+  <!-- map과 odom 연결해주는 것 시도해보기 odom과 연결하는 것이 아니라 base_link 일 수도 있음 -->
+  <node pkg="tf" type="static_transform_publisher" name="map_to_base_link" args="0 0 0 0 0 0 map base_link 100" />
+  
+  <!-- <node pkg="tf" type="static_transform_publisher" name="base_link_to_t265_link" args="0 0 0 0 0 0 base_link t265_link 100" /> -->
+  
+  <!-- <node pkg="tf" type="static_transform_publisher" name="t265_link_to_t265_odom_frame" args="0 0 0 0 0 0 $(arg tf_prefix)_link t265_odom_frame 100" /> -->
+  
+  
+  <node if="$(arg use_t265)" pkg="tf" type="static_transform_publisher" name="static_tf" args="0 0 0.05 0 0 0 t265_link l515_link 100" />
+  
+    <node name="cartographer_node" pkg="cartographer_ros"
       type="cartographer_node" args="
           -configuration_directory $(find slam_cartographer)/config
           -configuration_basename summit.lua"
@@ -67,11 +92,12 @@
     <!-- <remap from="scan" to="/spin_laser/scan" /> -->
     <!-- 카토그래퍼에서 원하는 것은 scan이라는 토픽인데, 센서에 맞춰서 (to 를 바꿔줘야함) -->
     <!-- 3d에서 2d로 변환함-->
-    <혹시 scan이 pointcloud_to_laserscan_node 에서 퍼블리싱을 하므로 확인 후에 겹쳐서 코드를 바꿀 수 있음
-    시도해 보기> 
+    <!-- <혹시 scan이 pointcloud_to_laserscan_node 에서 퍼블리싱을 하므로 확인 후에 겹쳐서 코드를 바꿀 수 있음 
+    시도해 보기>  -->
     <remap from="scan" to="/scan" />
     <!-- <remap from="imu" to="/imu/data" /> -->
-    <remap from="imu" to="/t265/imu" />
+    <remap from="imu" to="/imu/data" />
+    <!-- 필터노드 사용안 할 시에는 to를 /t265/imu 준다 -->
     <remap from="odom" to="/t265/odom/sample" />
     <!-- <remap from="points2" to="/l515/depth/color/points" /> -->
   </node>
@@ -81,8 +107,8 @@
 <!-- 문법찾아야함 노드로 실행하는 법<include unless="$(arg is_turtlesim)" file="$(find turtlesim)/launch/rs_camera.launch"> -->
 
 
-  <!-- <node name="rviz" pkg="rviz" type="rviz" required="true"
-        args="-d $(find cartographer_ros)/configuration_files/summit.rviz" /> -->
+  <node name="rviz" pkg="rviz" type="rviz" required="true"
+        args="-d $(find cartographer_ros)/configuration_files/summit.rviz" />
   
   <!-- 맵 생성 관련 -->
   <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"

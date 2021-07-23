@@ -76,9 +76,11 @@
             <param name="Grid/FromDepth"            type="string" value="true"/>  <!-- 클라우드 뎁스로부터 grid_map생성, false면 laser scan으로 부터생성 -->
             <param name="Reg/Strategy"              type="string" value="2"/> <!-- 1=ICP -->
 
-            <param name="subscribe_scan_cloud" type="bool" defaule="true"/>
+            <param name="subscribe_scan_cloud" type="bool" default="true"/>
             <remap from="scan_cloud" to="/l515/depth/color/points"/>
-            
+            <param name="subscribe_depth" default="true"/>
+            <remap from="odom" to="/t265/odom/sample"/>
+            <!-- odom_frame_id should not be set -->
             <arg name="odom_topic"         value="/$(arg camera1)/odom/sample"/>
             
             <!-- <remap from="odom_frame_id" to="odom"/> -->
