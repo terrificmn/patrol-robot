@@ -1,0 +1,32 @@
+<launch>
+
+    <arg name="use_l515" value="true"/>
+    <arg name="is_hd" value="false"/>
+    <include if="$(arg use_l515)" file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="serial_no" value="f0460650"/>
+        <arg name="camera" value="l515"/>
+        <arg name="align_depth" value="false"/>
+        <arg name="unite_imu_method" value="linear_interpolation"/>
+        <arg name="enable_gyro" value="false"/>
+        <arg name="enable_accel" value="false"/>
+        <arg name="filters" value="pointcloud"/>
+        <arg name="color_fps" value="30"/>
+        <arg name="pointcloud_texture_stream" value="RS2_STREAM_ANY"/>
+
+        <!-- High DEF CAM -->
+        <arg if="$(arg is_hd)" name="depth_width" value="1024"/>
+        <arg if="$(arg is_hd)" name="depth_height" value="768"/>
+        <arg if="$(arg is_hd)" name="color_width" value="1920"/>
+        <arg if="$(arg is_hd)" name="color_height" value="1080"/>
+        <!-- STANDARD DEF CAM --> <!-- 여기 선택됨 -->
+        <arg unless="$(arg is_hd)" name="depth_width" value="640"/>
+        <arg unless="$(arg is_hd)" name="depth_height" value="480"/>
+        <arg unless="$(arg is_hd)" name="color_width" value="1280"/>
+    </include>
+
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan_node">
+        <remap from="cloud_in" to="/l515/depth/color/points" />
+        <!-- publish는 scan으로 다시 내보내줌 , from과 to가 헤깔리지만 from이 노드에서 서브스크라이브 함-->
+    </node>
+
+</launch>

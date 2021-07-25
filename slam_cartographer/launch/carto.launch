@@ -11,10 +11,10 @@
   <arg name="base_frame_id" value="$(arg tf_prefix)_link" />
   <arg name="pose_frame_id" value="$(arg tf_prefix)_pose_frame" />
   <arg name="topic_odom_in"         default="/t265/odom/sample"/>
-  <arg name="publish_odom_tf" value="true"/>  
-
+  <arg name="publish_odom_tf" value="false"/>  
+  <!-- t265를 odom을 사용하려면 false로 하라는데 tf_free 변화는 있지만 안됨 -->
   <rosparam>
-      /camera/tracking_module/enable_pose_jumping: false
+      /t265/tracking_module/enable_pose_jumping: false
   </rosparam>
 
 
