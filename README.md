@@ -1,11 +1,93 @@
 # 경비 로봇 프로젝트
-Souct-Mini 자율주행차를 만들고 있습니다.
+자율주행차를 만들고 있습니다.
 
-README 파일은 업데이트 예정입니다...
+우분투 18.04 LTS, ROS melodic 버전, 파이썬 3.6
 
 <br/>
 
-## 깃 사용법 입니다. 잘 지켜주세요~
+대표 패키지들 소개   
+1. color_tracker, object_follower   
+2. sleeping_detect, roll-out-car
+
+<br/>
+
+## color_tracker 패키지 
+카메라를 통해서 원 모양의 특정 색 (녹색)을 추적하는 프로그램 입니다. 특정 색을 추적하면서 ROS를 이용해서 퍼블리싱을 합니다.
+
+필요한 라이브러리 
+```
+python3 -m pip install imutils numpy rospkg PyYAML opencv-python
+```
+opencv를 못찾는 경우에는 pip을 업그레이드한다
+```
+pip3 install --upgrade pip
+```
+파이썬으로 되어 있으므로 카메라만 있다면 자체 실행 가능. 
+
+ROS의 노드로 동작하게 하려면 catkin_make를 하고, 실행가능하게 권한을 바꿔줍니다.
+```
+cd ~/catkin_ws
+catkin_make
+```
+그리고 나서 
+```
+cd src/patrol-robot/color_tracker/src
+sudo chmod +x color_tracking.py
+rospack profile
+```
+ROS 노드 실행
+```
+rosrun color_tracker color_tracking.py
+```
+
+
+<br/>
+
+## object_follower 
+color_tracker 패키지의 topic을 구독하여서 쫒아가는 프로그램 입니다. scout-mini 자동차에게 움직임을 
+퍼블리싱 합니다.
+
+<br/>
+
+## sleeping_detect
+졸음 디텍팅 프로그램 입니다. 카메라를 통해서 눈 깜빡임으로 졸음을 감지하며 눈을 오래 감고 있으면 
+아두이노로 경고 LED을 표시하고 ROS를 통해 졸음 신호를 퍼블리싱 합니다.
+
+필요한 라이브러리
+```
+python3 -m pip install torch pandas tqdm torchvision matplotlib seaborn searial
+```
+파이썬으로 되어 있으므로 카메라만 있다면 자체 실행 가능. 
+
+ROS의 노드로 동작하게 하려면 catkin_make를 하고, 파이썬 파일을 실행가능하게 권한을 바꿔주면 됩니다.
+```
+cd ~/catkin_ws
+catkin_make
+```
+그리고 나서 
+```
+cd src/patrol-robot/sleeping_detect/scripts/yolov5 
+sudo chmod +x detect.py
+rospack profile
+```
+ROS 노드 실행
+```
+rosrun sleeping_detect detect.py
+```
+
+
+<br/>
+
+## roll-out-car
+slepping_detect 프로그램에서 보내온 topic을 받아서 scout-mini 자동차를 제어하는 프로그램 입니다.
+기본으로 사각형 모양으로 움직이다가 졸음 신호가 오면 자동차가 멈추게 됩니다.
+
+<br/>
+
+<br/>
+
+
+## 프로젝트 진행 중 git 사용법 입니다. 잘 지켜주세요~
 깃에서 **브랜치**를 사용해서 작업을 해주세요!
 
 먼저 오른쪽 상단의 Fork버튼을 눌러서 본인의 깃허브로 가져옵니다. 그리고 깃 클론을 해줍니다

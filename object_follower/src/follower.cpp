@@ -29,9 +29,9 @@ public:
     //contructor
     FollowedColor() {
         std::cout << "node started.." << std::endl;
-        //LocSub = Nh.subscribe<std_msgs::Int32MultiArray>("/color_tracker", 10, &FollowedColor::localCallback, this);
+        LocSub = Nh.subscribe<std_msgs::Int32MultiArray>("/color_tracker", 10, &FollowedColor::localCallback, this);
         LaserSub = Nh.subscribe<sensor_msgs::LaserScan>("/scan", 100, &FollowedColor::laserCallback, this);
-        LocSub = Nh.subscribe<std_msgs::Int32MultiArray>("/color_tracker_dummy", 10, &FollowedColor::localCallback, this); //for test
+        //LocSub = Nh.subscribe<std_msgs::Int32MultiArray>("/color_tracker_dummy", 10, &FollowedColor::localCallback, this); //for test
         TurtlePub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10); // 거북이 테스트용
         ScoutPub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10); //real to scout-mini
     }
@@ -55,7 +55,7 @@ public:
         
         while(ros::ok()) {
             
-            if (tempX == x) {
+            if (tempX == x) { //이전 값과 비교
                    xCount+= 0.1;
                    //std::cout << "same X" << std::endl;;
                 } else {
@@ -63,7 +63,9 @@ public:
                     //std::cout << "difference X" << std::endl;;
             }
             //just for test without cam (from real topic)
+            //테스트중임 변수값 임의로 셋팅~ 아래 2개 테스트 끝나면 삭제할 것
             xCount = 0.0; //shoud be removed when test is done
+            front_d = 0.31; //shoud be removed when test is done
 
             if (xCount > 1.0) {
                 std::cout << "x = " << x << std::endl;
