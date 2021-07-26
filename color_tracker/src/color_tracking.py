@@ -14,7 +14,7 @@ from std_msgs.msg import Int32MultiArray
 def talker(loc_x,loc_y):	 
 	pub = rospy.Publisher('color_tracker', Int32MultiArray, queue_size=10)
 	rospy.init_node('talker', anonymous=True)
-	rate = rospy.Rate(10) # 10hz
+	# rate = rospy.Rate(10) # 10hz   ## 아래 rate.sleep()이 필요없어짐
 	# while not rospy.is_shutdown():
 	location = "location"
 	print(location)
@@ -28,7 +28,7 @@ def talker(loc_x,loc_y):
 
 	pub.publish(loc_x_y)
 	
-	rate.sleep()
+	# rate.sleep() ## 캠 프리징 현상 때문에 주석처리
 
 
 
