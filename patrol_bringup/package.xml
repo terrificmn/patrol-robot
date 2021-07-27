@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>my_rtabmap</name>
+  <name>patrol_bringup</name>
   <version>0.0.0</version>
-  <description>The my_rtabmap package</description>
+  <description>The patrol_bringup package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

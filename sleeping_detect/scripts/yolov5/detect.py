@@ -245,7 +245,8 @@ def run(weights='yolov5s.pt',  # model.pt path(s)
 
 
 def parse_opt():
-    eye_path = os.getcwd()+"/src/sleeping_detect/scripts/yolov5/eye_best_s.pt"
+    # eye_path를 하드 코딩으로 경로를 넣어줌
+    eye_path = "/home/ubun/catkin_ws/src/patrol-robot/sleeping_detect/scripts/yolov5/eye_best_s.pt"  
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default=eye_path, help='model.pt path(s)')  # 모델 설정
     parser.add_argument('--source', type=str, default='0', help='file/dir/URL/glob, 0 for webcam')
