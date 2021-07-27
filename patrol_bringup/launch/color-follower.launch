@@ -1,5 +1,12 @@
 <launch>
-    <node pkg="color_tracker" name="color_tracking" type="color_tracking.py" output="screen" />
+    <!-- <node pkg="color_tracker" name="color_tracking" type="color_tracking.py" output="screen" /> -->
     <node pkg="object_follower" type="follower" name="follower" output="screen" />
     <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" />
+
+    <include file="$(find scout_bringup)/launch/scout_minimal.launch" />
+
+    <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan_node">
+        <remap from="cloud_in" to="/l515/depth/color/points" />
+        <!-- publish는 scan으로 다시 내보내줌 , from과 to가 헤깔리지만 from이 노드에서 서브스크라이브 함-->
+    </node>
 </launch>

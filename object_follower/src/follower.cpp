@@ -28,9 +28,10 @@ private:
 public:
     //contructor
     FollowedColor() {
-        std::cout << "node started.." << std::endl;
+        std::cout << "Follower node started.." << std::endl;
         LocSub = Nh.subscribe<std_msgs::Int32MultiArray>("/color_tracker", 10, &FollowedColor::localCallback, this);
         LaserSub = Nh.subscribe<sensor_msgs::LaserScan>("/scan", 100, &FollowedColor::laserCallback, this);
+        // 런치파일에서 pointcloud_to_laserscan 노드를 실행해야함
         //LocSub = Nh.subscribe<std_msgs::Int32MultiArray>("/color_tracker_dummy", 10, &FollowedColor::localCallback, this); //for test
         TurtlePub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10); // 거북이 테스트용
         ScoutPub = Nh.advertise<geometry_msgs::Twist>("/cmd_vel", 10); //real to scout-mini
