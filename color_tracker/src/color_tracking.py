@@ -13,7 +13,7 @@ from std_msgs.msg import Int32MultiArray
 
 def talker(loc_x,loc_y):	 
 	pub = rospy.Publisher('color_tracker', Int32MultiArray, queue_size=10)
-	rospy.init_node('talker', anonymous=True)
+	rospy.init_node('color_tracker_node', anonymous=True)
 	# rate = rospy.Rate(10) # 10hz   ## 아래 rate.sleep()이 필요없어짐
 	# while not rospy.is_shutdown():
 	location = "location"
@@ -43,8 +43,20 @@ args = vars(ap.parse_args())
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
-greenLower = (29, 86, 6)
-greenUpper = (64, 255, 255)
+
+#빨강색 (셋중에 그나마 빨강색 만! 인식한다)
+redLower = (161,155,84)
+redUpper = (179,255,255)
+
+# #초록색
+# greenLower = (29, 86, 6)
+# greenUpper = (64, 255, 255)
+
+# # 파랑색
+# blueLower = (110,50,50)
+# blueUpper =(130,255,255)
+
+
 pts = deque(maxlen=args["buffer"])
 # if a video path was not supplied, grab the reference
 # to the webcam
@@ -74,7 +86,18 @@ while True:
 	# construct a mask for the color "green", then perform
 	# a series of dilations and erosions to remove any small
 	# blobs left in the mask
-	mask = cv2.inRange(hsv, greenLower, greenUpper)
+
+
+	# 빨강색
+	mask = cv2.inRange(hsv,redLower,redUpper)
+
+	##초록색
+	# mask = cv2.inRange(hsv, greenLower, greenUpper)
+
+	# # 파랑색
+	# mask = cv2.inRange(hsv,blueLower,blueUpper)
+
+
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
 
