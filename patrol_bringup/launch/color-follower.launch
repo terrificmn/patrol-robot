@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="color_tracker" name="color_tracking" type="color_tracking.py" output="screen" />
+    <node pkg="object_follower" type="follower" name="follower" output="screen" />
+    <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" />
+</launch>
