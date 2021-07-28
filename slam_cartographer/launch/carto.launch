@@ -75,7 +75,7 @@
   </node>
 
   <!-- map과 odom 연결해주는 것 시도해보기 odom과 연결하는 것이 아니라 base_link 일 수도 있음 -->
-  <node pkg="tf" type="static_transform_publisher" name="map_to_base_link" args="0 0 0 0 0 0 map base_link 100" />
+  <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_base_link" args="0 0 0 0 0 0 map base_link 100" /> -->
   
   <!-- <node pkg="tf" type="static_transform_publisher" name="base_link_to_t265_link" args="0 0 0 0 0 0 base_link t265_link 100" /> -->
   

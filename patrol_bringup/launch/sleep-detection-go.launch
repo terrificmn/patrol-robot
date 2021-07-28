@@ -1,6 +1,6 @@
 <launch>
     <!-- <node pkg="sleeping_detect" name="detect" type="detect.py" output="screen" /> --> <!-- 아규먼트 에러 -->
-    <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" /> <!-- for test -->
+    <!-- <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" />  -->
     <node pkg="roll-out-car" type="rollout" name="rollout" output="screen" />
     <include file="$(find scout_bringup)/launch/scout_minimal.launch" />
 </launch>

@@ -19,7 +19,7 @@ private:
     const double ROTATION = 2.08; // fixed
     double rotation = 0.0;
     const double PI= 3.14159265359;
-    const double DISTANCE = 1.5;
+    const double DISTANCE = 2.5;
     const double LINEAR_SPEED = 0.3;
     // double RotationForOnePointFive = 0.0; // not work as expected
     bool isRotation = false;
@@ -30,7 +30,7 @@ public:
     //constructor
     RollOut() {
         std::cout << "initialize..." << std::endl;
-        Sleep_sub = Nh.subscribe<std_msgs::String>("/test_sleep_signal", 5, &RollOut::sleepingCallback, this);
+        Sleep_sub = Nh.subscribe<std_msgs::String>("/sleep_signal", 5, &RollOut::sleepingCallback, this);
         Motion_sub = Nh.subscribe<geometry_msgs::Twist>("/cmd_vel", 5, &RollOut::msgCallback, this);
 
         //Pub = Nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel", 10); //publisher 거북이 테스트
@@ -115,9 +115,9 @@ public:
 
             // IsSleepingSignal true이면
             } else {
-                // 살짝 커프를 돈 다음에 멈추는 코드로 진행 중.. 해결해야할 것은 신호가 계속 "1"로 되어 있어서 
-                // 신호가 안 들어올 때 
-                // 이쪽 else 코드로만 들어오는 것을 해결해야함 
+                // use below code if just stopping without other actions is needed
+                //rect.linear.x = 0.0;
+
                 if(stopCount < 22) {
                     rect.linear.x = 0.2;
                     //rect.angular.z = - 0.52;
@@ -144,9 +144,9 @@ public:
                     //rotationCount = 1; //reset
                 }
 
-                // if (stopCount == 100) {
-                //     stopCount = 1;
-                // }
+                if (stopCount == 140) {
+                    stopCount = 1;
+                }
                 stopCount++;
             }
             
@@ -157,7 +157,7 @@ public:
             Pub.publish(rect);
             //counter++;
             counter += 0.1;
-            ROS_ERROR("counter %lf", counter);
+            std::cout << "counter :" << counter << std::endl;
             totalCounter++;
             Loop_rate.sleep();
 

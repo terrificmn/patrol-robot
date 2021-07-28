@@ -1,12 +1,33 @@
 <launch>
     <!-- <node pkg="color_tracker" name="color_tracking" type="color_tracking.py" output="screen" /> -->
-    <node pkg="object_follower" type="follower" name="follower" output="screen" />
-    <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" />
+
+    <!-- <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" /> -->
 
     <include file="$(find scout_bringup)/launch/scout_minimal.launch" />
+
+    <arg name="use_l515" value="true"/>
+    <include if="$(arg use_l515)" file="$(find realsense2_camera)/launch/rs_camera.launch">
+        <arg name="serial_no" value="f0460650"/>
+        <arg name="camera" value="l515"/>
+        <arg name="align_depth" value="false"/>
+        <arg name="unite_imu_method" value="linear_interpolation"/>
+        <arg name="enable_gyro" value="false"/>
+        <arg name="enable_accel" value="false"/>
+        <arg name="filters" value="pointcloud"/>
+        <arg name="color_fps" value="30"/>
+        <arg name="pointcloud_texture_stream" value="RS2_STREAM_ANY"/>
+
+        <!-- STANDARD DEF CAM --> <!-- 여기 선택됨 -->
+        <arg name="depth_width" value="640"/>
+        <arg name="depth_height" value="480"/>
+        <arg name="color_width" value="1280"/>
+        <arg name="color_height" value="720"/>
+    </include>
 
     <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan_node">
         <remap from="cloud_in" to="/l515/depth/color/points" />
         <!-- publish는 scan으로 다시 내보내줌 , from과 to가 헤깔리지만 from이 노드에서 서브스크라이브 함-->
     </node>
+
+        <node pkg="object_follower" type="follower" name="follower" output="screen" />
 </launch>

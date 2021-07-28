@@ -35,7 +35,7 @@ ser = serial.Serial('/dev/ttyUSB0', 9600)
 
 # ROS
 def talker(status):
-    pub = rospy.Publisher('chatter', String, queue_size=100)
+    pub = rospy.Publisher('sleep_signal', String, queue_size=100)
     rospy.init_node('detect', anonymous=True)
     rate = rospy.Rate(10) # 10hz
 #    while not rospy.is_shutdown():
