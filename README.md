@@ -47,6 +47,21 @@ rosrun color_tracker color_tracking.py
 color_tracker 패키지의 topic을 구독하여서 쫒아가는 프로그램 입니다. scout-mini 자동차에게 움직임을 
 퍼블리싱 합니다.
 
+필요한 패키지
+- pointcloud_to_laserscan    
+- realsense2_camera  
+
+먼저 라이다 카메라 구동을 위해서 런치파일을 실행합니다
+```
+roslaunch object_follower point_to_laser.launch
+```
+
+그리고 follower 노드 실행
+```
+rosrun object_follower follower
+```
+
+
 <br/>
 
 ## sleeping_detect
@@ -70,7 +85,17 @@ cd src/patrol-robot/sleeping_detect/scripts/yolov5
 sudo chmod +x detect.py
 rospack profile
 ```
-ROS 노드 실행
+
+이제 파이썬 스크립트를 실행할 수 있지만 그 전에 arduino를 실행해야합니다.  
+sleeping_detect/arduino_code/serial_for_detection.ino 을 실행해줍니다.  
+
+(arduino 와 아두이노 IDE인 스케치북가 필요합니다.)  
+[다운로드](https://www.arduino.cc/en/software)  
+[설치 및 셋업 참고하기](http://wiki.ros.org/rosserial_arduino/Tutorials/Arduino%20IDE%20Setup)  
+
+<br/>
+
+이제 파이썬 스크립트 실행
 ```
 rosrun sleeping_detect detect.py
 ```
@@ -82,10 +107,18 @@ rosrun sleeping_detect detect.py
 slepping_detect 프로그램에서 보내온 topic을 받아서 scout-mini 자동차를 제어하는 프로그램 입니다.
 기본으로 사각형 모양으로 움직이다가 졸음 신호가 오면 자동차가 멈추게 됩니다.
 
+런치파일로 실행
+```
+roslaunch roll-out-car rollout.launch
+```
+
+<br/>
+
 <br/>
 
 <br/>
 
+___
 
 ## 프로젝트 진행 중 git 사용법 입니다. 잘 지켜주세요~
 깃에서 **브랜치**를 사용해서 작업을 해주세요!
